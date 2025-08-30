@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="packel_chobe" content="width=device-width, initial-scale=1.0">
+    <meta name="chaibe" content="width=device-width, initial-scale=1.0">
+    <title> ইমেজ গ্যালারি</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #7e22ce;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray: #94a3b8;
+            --success: #22c55e;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f1f5f9;
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* লোডিং এনিমেশন */
+        .loader-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+        }
+        
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--gray);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* হেডার স্টাইলিং */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            text-align: center;
+            padding: 3rem 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23ffffff' fill-opacity='0.1' d='M0,128L48,117.3C96,107,192,85,288,112C384,139,480,213,576,224C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: fadeInDown 1s ease;
+        }
+        
+        .tagline {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        /* ফিল্টার বাটন */
+        .filter-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 2rem 0;
+        }
+        
+        .filter-btn {
+            background: white;
+            color: var(--dark);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .filter-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* গ্যালারি লেআউট */
+        .gallery-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 15px;
+        }
+        
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        
+        /* গ্যালারি আইটেম স্টাইলিং */
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            aspect-ratio: 4/3;
+        }
+        
+        .gallery-item:hover {
+            transform: translateY(-8px);
+        }
+        
+        .gallery-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .gallery-item:hover .gallery-image {
+            transform: scale(1.1);
+        }
+        
+        /* ওভারলে স্টাইলিং (হোবার ইফেক্ট) */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-start;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            padding: 25px;
+        }
+        
+        .gallery-item:hover .overlay {
+            opacity: 1;
+        }
+        
+        .overlay-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            transform: translateY(20px);
+            transition: transform 0.4s ease;
+        }
+        
+        .overlay-desc {
+            font-size: 1rem;
+            opacity: 0.9;
+            transform: translateY(20px);
+            transition: transform 0.4s ease 0.1s;
+        }
+        
+        .gallery-item:hover .overlay-title,
+        .gallery-item:hover .overlay-desc {
+            transform: translateY(0);
+        }
+        
+        /* লাইটবক্স মোডাল */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .lightbox.open {
+            display: flex;
+            opacity: 1;
+        }
+        
+        .lightbox-content {
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+        }
+        
+        .lightbox-img {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 8px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .lightbox-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .lightbox-close:hover {
+            color: var(--primary);
+        }
+        
+        .lightbox-caption {
+            color: white;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            transform: translateY(-50%);
+        }
+        
+        .lightbox-btn {
+            color: white;
+            background: rgba(0, 0, 0, 0.5);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .lightbox-btn:hover {
+            background: var(--primary);
+        }
+        
+        /* ফুটার স্টাইলিং */
+        footer {
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 2.5rem 1rem;
+            margin-top: 5rem;
+        }
+        
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .social-links a {
+            color: white;
+            font-size: 1.5rem;
+            transition: color 0.3s ease;
+        }
+        
+        .social-links a:hover {
+            color: var(--primary);
+        }
+        
+        .copyright {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+        
+        /* স্ক্রোল টপ বাটন */
+        .scroll-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+            z-index: 100;
+        }
+        
+        .scroll-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .scroll-top:hover {
+            background: var(--primary-dark);
+            transform: translateY(-5px);
+        }
+        
+        /* অ্যানিমেশন */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        /* রেসপন্সিভ ডিজাইন */
+        @media (max-width: 992px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 20px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .tagline {
+                font-size: 1.1rem;
+            }
+            
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 15px;
+            }
+            
+            .lightbox-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .gallery {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .filter-btn {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+            
+            .scroll-top {
+                bottom: 20px;
+                right: 20px;
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+        }
+
+        .social-links {
+          display: flex;
+          justify-content: center;
+          gap: 28px;
+          padding: 20px 10px;
+          flex-wrap: wrap;
+        }
+        .social-links a {
+          position: relative;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 16px 40px;
+          background: #78731690;
+          border-radius: 24px;
+          color: rgb(255, 230, 0);
+          font-weight: 600;
+          font-size: 22px;
+          text-decoration: none;
+          box-shadow: 0 15px 30px rgba(25, 0, 255, 0.3);
+          transition:
+            transform 0.4s ease,
+            box-shadow 0.4s ease,
+            color 0.35s ease,
+            background 0.5s ease;
+          overflow: hidden;
+          cursor: pointer;
+          white-space: nowrap;
+        }
+
+               /* Tooltip style */
+               .social-links a::after {
+          content: attr(data-tooltip);
+          position: absolute;
+          bottom: 100%;
+          left: 50%;
+          transform: translateX(-50%) translateY(10px);
+          background: #0011ff;
+          color: #fbff00;
+          padding: 6px 12px;
+          border-radius: 6px;
+          font-size: 14px;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.3s ease, transform 0.3s ease;
+          white-space: nowrap;
+          z-index: 10;
+        }
+        .social-links a:hover::after,
+        .social-links a:focus::after {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+      
+        /* Focus outline for accessibility */
+        .social-links a:focus-visible {
+          outline: 3px solid #ff00c8;
+          outline-offset: 6px;
+        }
+      
+        .social-links a:hover {
+          transform: scale(1.12);
+          background: linear-gradient(185deg, #00ff55b4 0%, #3300ff 100%);
+          color: #222;
+          box-shadow:
+            0 8px 16px rgba(255, 213, 79, 0.6),
+            0 0 12px 4px rgba(255, 213, 79, 0.45);
+          animation: pulseShadow 2s infinite alternate;
+        }
+
+
+    </style>
+</head>
+<body>
+    <!-- লোডিং এনিমেশন -->
+    <div class="loader-container">
+        <div class="loader"></div>
+    </div>
+
+    <!-- হেডার সেকশন -->
+    <header>
+        <div class="header-content">
+            <h1> ইমেজ গ্যালারি</h1>
+            <p class="tagline">আমার বিশেষ মুহূর্তগুলির একটি অনবদ্য সংগ্রহ</p>
+            
+            <div class="filter-container">
+                <button class="filter-btn active" data-filter="all">সবগুলো</button>
+                <button class="filter-btn" data-filter="nature">প্রকৃতি</button>
+                <button class="filter-btn" data-filter="urban">শহুরে</button>
+                <button class="filter-btn" data-filter="portrait">পোর্ট্রেট</button>
+                <button class="filter-btn" data-filter="travel">ভ্রমণ</button>
+            </div>
+        </div>
+    </header>
+    
+    <!-- মেইন কন্টেন্ট -->
+    <main class="gallery-container">
+        <div class="gallery">
+            <!-- ছবি ১ -->
+            <div class="gallery-item" data-category="nature">
+                <img src="imge/1.jpg" alt="প্রকৃতি" class="gallery-image">
+                <div class="overlay">
+                    <h3 class="overlay-title">প্রকৃতির সৌন্দর্য</h3>
+                    <p class="overlay-desc">প্রকৃতির অদৃশ্য হাতের আঁকা একটি দৃশ্য</p>
+                </div>
+            </div>
+            
+            <!-- ছবি ২ -->
+            <div class="gallery-item" data-category="urban">
+                <img src="imge/2.jpg" alt="শহর" class="gallery-image">
+                <div class="overlay">
+                    <h3 class="overlay-title">আধুনিক নগরী</h3>
+                    <p class="overlay-desc">আলোকিত শহরের রাতের দৃশ্য</p>
+                </div>
+            </div>
+            
+            <!-- ছবি ৩ -->
+            <div class="gallery-item" data-category="nature">
+                <img src="imge/3.jpg" alt="পর্বত" class="gallery-image">
+                <div class="overlay">
+                    <h3 class="overlay-title">উচ্চ পর্বত</h3>
+                    <p class="overlay-desc">মেঘ ছুঁয়েছে যে পর্বত শিখর</p>
+                </div>
+            </div>
+            
+            <!-- ছবি ৪ -->
+            <div class="gallery-item" data-category="travel">
+                <img src="imge/4.jpg" alt="সমুদ্র" class="gallery-image">
+                <div class="overlay">
+                    <h3 class="overlay-title">নীল সমুদ্র</h3>
+                    <p class="overlay-desc">অনন্ত নীলিমা সমুদ্রের জলরাশি</p>
+                </div>
+            </div>
+            
+            <!-- ছবি ৫ -->
+            <div class="gallery-item" data-category="portrait">
+                <img src="imge/5.jpg" alt="পোর্ট্রেট" class="gallery-image">
+                <div class="overlay">
+                    <h3 class="overlay-title">প্রকৃতির মধ্যে</h3>
+                    <p class="overlay-desc">প্রকৃতির সাথে মানবের সংযোগ</p>
+                </div>
+            </div>
+            
+            <!-- ছবি ৬ -->
+            <div class="gallery-item" data-category="nature">
+                <img src="imge/6.jpg" alt="বন" class="gallery-image">
+                <div class="overlay">
+                    <h3 class="overlay-title">ঘন বন</h3>
+                    <p class="overlay-desc">গহীন অরণ্যের রহস্যময়তা</p>
+                </div>
+            </div>
+            
+            <!-- ছবি ৭ -->
+            <div class="gallery-item" data-category="urban">
+                <img src="imge/7.jpg" alt="স্থাপত্য" class="gallery-image">
+                <div class="overlay">
+                    <h3 class="overlay-title">আধুনিক স্থাপত্য</h3>
+                    <p class="overlay-desc">নকশার সাথে প্রকৃতির মেলবন্ধন</p>
+                </div>
+            </div>
+            
+            <!-- ছবি ৮ -->
+            <div class="gallery-item" data-category="travel">
+                <img src="imge/8.jpg" alt="ভ্রমণ" class="gallery-image">
+                <div class="overlay">
+                    <h3 class="overlay-title">অভিযানের শুরু</h3>
+                    <p class="overlay-desc">অজানা পথের অভিযাত্রী</p>
+                </div>
+            </div>
+            
+            <!-- ছবি ৯ -->
+            <div class="gallery-item" data-category="portrait">
+                <img src="imge/9.jpg" alt="মহিলা" class="gallery-image">
+                <div class="overlay">
+                    <h3 class="overlay-title">প্রকৃতির কন্যা</h3>
+                    <p class="overlay-desc">প্রকৃতির মধ্যে লালিত সৌন্দর্য</p>
+                </div>
+            </div>
+            
+            <!-- ছবি ১০ -->
+            <div class="gallery-item" data-category="nature">
+                <img src="imge/10.jpg" alt="সূর্যাস্ত" class="gallery-image">
+                <div class="overlay">
+                    <h3 class="overlay-title">সূর্যাস্ত</h3>
+                    <p class="overlay-desc">দিনের শেষে আকাশের রঙ্গিন খেলা</p>
+                </div>
+            </div>
+            
+            <!-- ছবি ১১ -->
+            <div class="gallery-item" data-category="urban">
+                <img src="imge/11.jpg" alt="রাত" class="gallery-image">
+                <div class="overlay">
+                    <h3 class="overlay-title">জীবনরাত্রি</h3>
+                    <p class="overlay-desc">রাতের শহরের নিজস্ব জীবন</p>
+                </div>
+            </div>
+            
+            <!-- ছবি ১২ -->
+            <div class="gallery-item" data-category="travel">
+                <img src="imge/12.jpg" alt="অ্যাডভেঞ্চার" class="gallery-image">
+                <div class="overlay">
+                    <h3 class="overlay-title">অ্যাডভেঞ্চার</h3>
+                    <p class="overlay-desc">রোমাঞ্চকর পথের যাত্রী</p>
+                </div>
+            </div>
+
+                        <!-- ছবি ১3 -->
+                        <div class="gallery-item" data-category="travel">
+                            <img src="imge/13.jpg" alt="অ্যাডভেঞ্চার" class="gallery-image">
+                            <div class="overlay">
+                                <h3 class="overlay-title">অ্যাডভেঞ্চার</h3>
+                                <p class="overlay-desc">রোমাঞ্চকর পথের যাত্রী</p>
+                            </div>
+                        </div>
+        </div>
+    </main>
+    
+    <!-- লাইটবক্স মোডাল -->
+    <div class="lightbox">
+        <div class="lightbox-content">
+            <span class="lightbox-close">&times;</span>
+            <img src="" alt="" class="lightbox-img">
+            <div class="lightbox-caption"></div>
+            <div class="lightbox-nav">
+                <div class="lightbox-btn prev"><i class="fas fa-chevron-left"></i></div>
+                <div class="lightbox-btn next"><i class="fas fa-chevron-right"></i></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- স্ক্রোল টপ বাটন -->
+    <div class="scroll-top">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+    
+    <!-- ফুটার -->
+    <footer>
+        <h3>যোগাযোগ</h3>
+
+        <div class="social-links">
+                          
+            <a href="https://wa.me/8801798383377" target="_blank" aria-label="WhatsApp" data-tooltip="WhatsApp" tabindex="0">
+              <svg class="social-icon" role="img" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                <circle cx="12" cy="12" r="12" fill="#25D366"/>
+                <path fill="#fff" d="M17.472 14.382c-.297-.148-1.758-.867-2.031-.967-.273-.099-.471-.148-.67.15-.198.297-.767.967-.94 1.164-.173.198-.347.223-.644.074-.297-.148-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.173.198-.297.298-.495.099-.198.05-.37-.025-.52-.074-.148-.67-1.612-.916-2.207-.242-.579-.487-.5-.67-.51-.173-.007-.37-.008-.566-.008-.198 0-.52.074-.792.37-.258.297-1.04 1.016-1.04 2.479 0 1.462 1.064 2.875 1.213 3.074.148.198 2.095 3.2 5.076 4.487.709.306 1.26.487 1.69.623.71.226 1.36.194 1.872.118.571-.085 1.758-.718 2.006-1.413.248-.694.248-1.29.174-1.413-.073-.123-.272-.198-.57-.346z"/>
+              </svg>
+              <span class="btn-text">WhatsApp</span>
+            </a>
+          
+            <a href="https://t.me/abdullahseikh5" target="_blank" aria-label="Telegram" data-tooltip="Telegram" tabindex="0">
+              <svg class="social-icon" role="img" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                <circle cx="12" cy="12" r="12" fill="#0088CC"/>
+                <path fill="#fff" d="M17.563 8.757L10.34 12.484l2.29 1.02 5.44-6.78zM9.195 14.312l1.412 4.133c.162 0 .23-.054.312-.12l2.578-2.4 4.983 3.675c.875.497 1.506.238 1.727-1.005l2.24-10.418c.2-.927-.32-1.3-.927-1.08L7.748 13.8c-1.28.492-1.272 1.18-.017 1.5z"/>
+              </svg>
+              <span class="btn-text">Telegram</span>
+            </a>
+          
+            <a href="https://m.me/AbdullahShaike2006" target="_blank" aria-label="Messenger" data-tooltip="Messenger" tabindex="0">
+              <svg class="social-icon" role="img" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                <circle cx="12" cy="12" r="12" fill="#0084FF"/>
+                <path fill="#fff" d="M16.95 10.506L11.427 15.906l-3.007-3.01-5.22 4.41 4.775-7.637 2.832 2.837 5.132-4.996z"/>
+              </svg>
+              <span class="btn-text">Messenger</span>
+            </a>
+          
+            <a href="https://www.facebook.com/AbdullahShaike2006" target="_blank" aria-label="Facebook" data-tooltip="Facebook" tabindex="0">
+              <svg class="social-icon" role="img" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                <circle cx="12" cy="12" r="12" fill="#1877F2"/>
+                <path fill="#fff" d="M14.667 13.83h-1.5v5.25h-2.25v-5.25h-1.5v-2.25h1.5v-1.125c0-1.03.915-2.25 2.25-2.25h1.5v2.25h-1.5v1.125z"/>
+              </svg>
+              <span class="btn-text">Facebook</span>
+            </a>
+        </div>
+
+
+
+        <p class="copyright">২০২৫ সালের আমি পেক্টিকেল পরিক্ষা দিতে যাই, তখন কার কিছু ছবি ।  এই মাদ্রাসায় আমাদের পেক্টিকেল পরিক্ষা হয়।</p>
+    </footer>
+
+    <script>
+        // DOM লোড হওয়ার পর লোডিং স্ক্রীন隐藏 করুন
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                document.querySelector('.loader-container').style.opacity = '0';
+                setTimeout(function() {
+                    document.querySelector('.loader-container').style.display = 'none';
+                }, 50);
+            }, 5);
+            
+            // ফিল্টার সিস্টেম
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const galleryItems = document.querySelectorAll('.gallery-item');
+            
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // সক্রিয় বাটন পরিবর্তন
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    // ফিল্টার প্রয়োগ
+                    const filter = button.getAttribute('data-filter');
+                    
+                    galleryItems.forEach(item => {
+                        if (filter === 'all' || item.getAttribute('data-category') === filter) {
+                            item.style.display = 'block';
+                            setTimeout(() => {
+                                item.style.opacity = '1';
+                                item.style.transform = 'scale(1)';
+                            }, 10);
+                        } else {
+                            item.style.opacity = '0';
+                            item.style.transform = 'scale(0.8)';
+                            setTimeout(() => {
+                                item.style.display = 'none';
+                            }, 300);
+                        }
+                    });
+                });
+            });
+            
+            // লাইটবক্স সিস্টেম
+            const lightbox = document.querySelector('.lightbox');
+            const lightboxImg = document.querySelector('.lightbox-img');
+            const lightboxCaption = document.querySelector('.lightbox-caption');
+            const lightboxClose = document.querySelector('.lightbox-close');
+            const lightboxPrev = document.querySelector('.lightbox-btn.prev');
+            const lightboxNext = document.querySelector('.lightbox-btn.next');
+            const images = document.querySelectorAll('.gallery-image');
+            let currentImageIndex = 0;
+            
+            // লাইটবক্স খোলা
+            images.forEach((image, index) => {
+                image.addEventListener('click', () => {
+                    currentImageIndex = index;
+                    openLightbox();
+                });
+            });
+            
+            function openLightbox() {
+                const imageSrc = images[currentImageIndex].getAttribute('src');
+                const imageAlt = images[currentImageIndex].getAttribute('alt');
+                lightboxImg.setAttribute('src', imageSrc);
+                lightboxCaption.textContent = imageAlt;
+                lightbox.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            }
+            
+            // লাইটবক্স বন্ধ করা
+            lightboxClose.addEventListener('click', () => {
+                lightbox.classList.remove('open');
+                document.body.style.overflow = 'auto';
+            });
+            
+            // পূর্ববর্তী এবং পরবর্তী ছবিতে যাওয়া
+            lightboxPrev.addEventListener('click', () => {
+                currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+                openLightbox();
+            });
+            
+            lightboxNext.addEventListener('click', () => {
+                currentImageIndex = (currentImageIndex + 1) % images.length;
+                openLightbox();
+            });
+            
+            // কী-বোর্ড নেভিগেশন
+            document.addEventListener('keydown', (e) => {
+                if (lightbox.classList.contains('open')) {
+                    if (e.key === 'Escape') {
+                        lightbox.classList.remove('open');
+                        document.body.style.overflow = 'auto';
+                    } else if (e.key === 'ArrowLeft') {
+                        currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+                        openLightbox();
+                    } else if (e.key === 'ArrowRight') {
+                        currentImageIndex = (currentImageIndex + 1) % images.length;
+                        openLightbox();
+                    }
+                }
+            });
+            
+            // স্ক্রোল টপ বাটন
+            const scrollTopBtn = document.querySelector('.scroll-top');
+            
+            window.addEventListener('scroll', () => {
+                if (window.pageYOffset > 300) {
+                    scrollTopBtn.classList.add('show');
+                } else {
+                    scrollTopBtn.classList.remove('show');
+                }
+            });
+            
+            scrollTopBtn.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
